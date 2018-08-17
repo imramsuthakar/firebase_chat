@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="3dp">
+
+    <me.himanshusoni.chatmessageview.ChatMessageView xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/chatMessageView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cmv_arrowGravity="start"
+        app:cmv_arrowMargin="3dp"
+        app:cmv_arrowPosition="right"
+        app:cmv_backgroundColor="@color/colorPrimary"
+        app:cmv_backgroundColorPressed="#ff00bcd4"
+        app:cmv_contentPadding="5dp"
+        app:cmv_cornerRadius="2dp"
+        app:cmv_showArrow="false">
+
+        <ImageView
+            android:id="@+id/mine_image"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:background="#aaffffff"
+            android:src="@drawable/ic_gallery" />
+
+    </me.himanshusoni.chatmessageview.ChatMessageView>
+
+
+    <TextView
+        android:id="@+id/time_stamp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:paddingEnd="8dp"
+        android:paddingStart="8dp"
+        android:paddingTop="4dp"
+        android:drawablePadding="4dp"
+        android:drawableEnd="@drawable/ic_tick"
+        android:textAllCaps="true"
+        android:textColor="#AAA"
+        android:textSize="10sp" />
+
+</LinearLayout>
