@@ -33,6 +33,14 @@ public class Chat {
     @Expose
     private Integer read;
 
+    @SerializedName("lat")
+    @Expose
+    private String lat;
+
+    @SerializedName("lat")
+    @Expose
+    private String lng;
+
     public String getKey() {
         return key;
     }

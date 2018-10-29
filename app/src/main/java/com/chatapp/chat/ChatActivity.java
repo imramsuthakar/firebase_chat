@@ -42,6 +42,12 @@ import android.widget.Toast;
 
 import com.chatapp.MyApplication;
 import com.chatapp.R;
+import com.chatapp.util.MapModel;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlacePicker;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -120,7 +126,9 @@ public class ChatActivity extends AppCompatActivity {
     List<Chat> chatList = new ArrayList<>();
 
     DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.getDefault());
-    String uploaded_image_url ="";
+    String uploaded_image_url = "";
+    private static final int PLACE_PICKER_REQUEST = 123;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -181,10 +189,10 @@ public class ChatActivity extends AppCompatActivity {
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 boolean handled = false;
                 if (actionId == EditorInfo.IME_ACTION_SEND) {
-                      String myText = etMessage.getText().toString().trim();
-                        if (myText.length() > 0) {
-                            sendMessage(myText);
-                        }
+                    String myText = etMessage.getText().toString().trim();
+                    if (myText.length() > 0) {
+                        sendMessage(myText);
+                    }
 
                     handled = true;
                 }
@@ -215,12 +223,11 @@ public class ChatActivity extends AppCompatActivity {
         });
 
         sender_id = MyApplication.sender;
-        receiver_id  = MyApplication.receiver;
+        receiver_id = MyApplication.receiver;
 
 
         mAdapter = new ChatMessageAdapter(this, chatList, senderAvatar);
         mChatView.setAdapter(mAdapter);
-
 
 
         myRef = database.getReference().child(chatPath);
@@ -266,8 +273,6 @@ public class ChatActivity extends AppCompatActivity {
         });
 
 
-
-
     }
 
     @Override
@@ -277,23 +282,22 @@ public class ChatActivity extends AppCompatActivity {
     }
 
 
-
     @OnClick({R.id.attachment, R.id.send_messsage})
     public void onViewClicked(View view) {
         switch (view.getId()) {
 
             case R.id.attachment:
 
-                    openAttachmentDialog();
+                openAttachmentDialog();
 
                 break;
             case R.id.send_messsage:
 
 
-                    String myText = etMessage.getText().toString().trim();
-                    if (myText.length() > 0) {
-                        sendMessage(myText);
-                    }
+                String myText = etMessage.getText().toString().trim();
+                if (myText.length() > 0) {
+                    sendMessage(myText);
+                }
 
                 break;
 
@@ -368,10 +372,10 @@ public class ChatActivity extends AppCompatActivity {
 
                     progressBar.setIndeterminate(false);
                 }
-            }});
+            }
+        });
 
     }
-
 
 
     @Override
@@ -396,8 +400,52 @@ public class ChatActivity extends AppCompatActivity {
         });
 
 
-    }
+        if (requestCode == PLACE_PICKER_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                Place place = PlacePicker.getPlace(this, data);
+                if (place != null) {
+                    LatLng latLng = place.getLatLng();
+                    MapModel mapModel = new MapModel(latLng.latitude + "", latLng.longitude + "");
 
+                    Toast.makeText(thisActivity, mapModel.getLatitude() + "", Toast.LENGTH_SHORT).show();
+
+                    /* A Place object contains details about that place, such as its name, address
+                and phone number. Extract the name, address, phone number, place ID and place types.
+                 */
+                    final CharSequence name = place.getName();
+                    final CharSequence address = place.getAddress();
+                    final CharSequence phone = place.getPhoneNumber();
+                    final String placeId = place.getId();
+                    String attribution = PlacePicker.getAttributions(data);
+                    if (attribution == null) {
+                        attribution = "";
+                    }
+
+
+                    String url = "https://maps.googleapis.com/maps/api/staticmap?center="+latLng.latitude+","+latLng.longitude+"&zoom=17&size=400x400&key=AIzaSyDNmSE7xEYTKxPOXp1rkda67va-HTr_Mes";
+
+
+                    Log.d(TAG, "url: " + url);
+
+                    // Print data to debug log
+                    Log.d(TAG, "Place selected: " + placeId + " (" + name.toString() + ")");
+
+                    Chat chat = new Chat();
+                    chat.setSender(sender_id);
+                    chat.setTimestamp(System.currentTimeMillis());
+                    chat.setType("image");
+                    chat.setUrl(String.valueOf(url));
+                    chat.setReceiver(receiver_id);
+                    chat.setRead(0);
+                    myRef.push().setValue(chat);
+
+                    //  databaseReference.push().setValue(mapModel);
+                }
+            }
+        }
+
+
+    }
 
 
     public String getMimeType(Uri uri) {
@@ -413,7 +461,6 @@ public class ChatActivity extends AppCompatActivity {
         }
         return mimeType;
     }
-
 
 
     @Override
@@ -450,7 +497,7 @@ public class ChatActivity extends AppCompatActivity {
 
     private void openAttachmentDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        String[] animals = {"Camera", "Gallery"};
+        String[] animals = {"Camera", "Gallery", "Location"};
         builder.setItems(animals, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -470,6 +517,10 @@ public class ChatActivity extends AppCompatActivity {
                         }
                         break;
 
+                    case 2:
+                        locationPlacesIntent();
+                        break;
+
                     default:
                         break;
                 }
@@ -479,6 +530,15 @@ public class ChatActivity extends AppCompatActivity {
         dialog.show();
     }
 
+
+    private void locationPlacesIntent() {
+        try {
+            PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
+            startActivityForResult(builder.build(this), PLACE_PICKER_REQUEST);
+        } catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e) {
+            e.printStackTrace();
+        }
+    }
 
 }
 
